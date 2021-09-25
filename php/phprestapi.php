@@ -8,7 +8,7 @@ if (function_exists($_GET['function'])) {
 function get_notes()
 {
     global $connect;
-    $query = $connect->query("SELECT * FROM note");
+    $query = $connect->query("SELECT * FROM note ORDER BY date DESC, id DESC");
 
     while ($row = mysqli_fetch_object($query)) {
         $data[] = $row;
@@ -61,7 +61,6 @@ function insert_note()
     global $connect;
 
     $check = array(
-        // 'id' => '',
         'message' => '',
         'date' => ''
     );
@@ -69,7 +68,6 @@ function insert_note()
 
     if ($check_match == count($check)) {
         $result = mysqli_query($connect, "INSERT INTO note SET 
-        -- id = '$_POST[id]',
         message = '$_POST[message]',
         date = '$_POST[date]'");
 
