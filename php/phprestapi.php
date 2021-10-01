@@ -191,18 +191,17 @@ function get_user_login()
     while ($row = mysqli_fetch_object($result)) {
         $data[] = $row;
     }
-    echo $data;
 
     if ($data) {
         $response = array(
             'status' => 1,
-            'message' => 'Success',
+            'message' => 'Login Success',
             'data' => $data
         );
     } else {
         $response = array(
             'status' => 0,
-            'message' => 'No Data Found'
+            'message' => 'Login Failed'
         );
     }
 
@@ -214,47 +213,51 @@ function insert_user()
 {
     global $connect;
 
-    $check = array(
+    $check1 = array(
         'username' => '',
         'password' => '',
         'profileImage' => ''
     );
 
-    $check_match = count(array_intersect_key($_POST, $check));
+    $check2 = array(
+        'username' => '',
+        'password' => ''
+    );
 
-    if ($check_match == count($check)) {
+    $check_match1 = count(array_intersect_key($_POST, $check1));
+    $check_match2 = count(array_intersect_key($_POST, $check2));
 
-        $image = $_FILES[$_POST['profileImage']]['tmp_name'];
-        $imageName = $_FILES[$_POST['profileImage']]['name'];
-
-        $file_path = $_SERVER['DOCUMENT_ROOT'].'/notesapi/images';
-        $imagePath = $file_path.'/'.$imageName;
-        $data = "";
-
-        if (!$image) {
-            $data = "Gambar tidak ditemukan";
-
-            $result = mysqli_query($connect, "INSERT INTO users SET 
-            username = '$_POST[username]',
-            password = '$_POST[password]'");
-        } else {
-            $data = upload_image();
-
+    if ($check_match1 == count($check1)) {
             $result = mysqli_query($connect, "INSERT INTO users SET 
             username = '$_POST[username]',
             password = '$_POST[password]',
-            profileImage = '$imagePath'");
-        }
+            profileImage = '$_POST[profileImage]'");
 
         if ($result) {
             $response = array(
                 'status' => 1,
-                'message' => 'Insert Success, '.$data
+                'message' => 'Insert Success'
             );
         } else {
             $response = array(
                 'status' => 0,
-                'message' => 'Insert Failed, '.$data
+                'message' => 'Insert Failed'
+            );
+        }
+    } else if ($check_match2 == count($check2)){
+        $result = mysqli_query($connect, "INSERT INTO users SET 
+        username = '$_POST[username]',
+        password = '$_POST[password]'");
+
+        if ($result) {
+            $response = array(
+                'status' => 1,
+                'message' => 'Insert Success'
+            );
+        } else {
+            $response = array(
+                'status' => 0,
+                'message' => 'Insert Failed'
             );
         }
     } else {
@@ -276,55 +279,57 @@ function update_user()
         $id = $_GET["id"];
     }
 
-    $check = array(
+    $check1 = array(
         'username' => '',
         'password' => '',
         'profileImage' => ''
     );
-    $check_match = count(array_intersect_key($_POST, $check));
 
-    if ($check_match == count($check)) {
+    $check2 = array(
+        'username' => '',
+        'password' => ''
+    );
 
-        $image = $_FILES[$_POST['profileImage']]['tmp_name'];
-        $imageName = $_FILES[$_POST['profileImage']]['name'];
+    $check_match1 = count(array_intersect_key($_POST, $check1));
+    $check_match2 = count(array_intersect_key($_POST, $check2));
 
-        $file_path = $_SERVER['DOCUMENT_ROOT'].'/notesapi/images';
-        $imagePath = $file_path.'/'.$imageName;
-        $data = "";
-
-        if (!$image) {
-            $data = "Gambar tidak ditemukan";
-
-            $result = mysqli_query($connect, "UPDATE users SET 
-            username = '$_POST[username]',
-            password = '$_POST[password]' WHERE id = $id");
-        } else {
-            $data = upload_image();
-
+    if ($check_match1 == count($check1)) {
             $result = mysqli_query($connect, "UPDATE users SET 
             username = '$_POST[username]',
             password = '$_POST[password]',
-            profileImage = '$imagePath' WHERE id = $id");
-
-            ;
-        }
+            profileImage = '$_POST[profileImage]' WHERE id = $id");
 
         if ($result) {
             $response = array(
                 'status' => 1,
-                'message' => 'Update Success, '.$data
+                'message' => 'Update Success'
             );
         } else {
             $response = array(
                 'status' => 0,
-                'message' => 'Update Failed, '.$data
+                'message' => 'Update Failed'
+            );
+        }
+    } else if ($check_match2 == count($check2)){
+        $result = mysqli_query($connect, "UPDATE users SET 
+        username = '$_POST[username]',
+        password = '$_POST[password]' WHERE id = $id");
+
+        if ($result) {
+            $response = array(
+                'status' => 1,
+                'message' => 'Update Success'
+            );
+        } else {
+            $response = array(
+                'status' => 0,
+                'message' => 'Update Failed'
             );
         }
     } else {
         $response = array(
             'status' => 0,
-            'message' => 'Update Failed',
-            'data' => $id
+            'message' => 'Wrong Parameter'
         );
     }
 
@@ -368,4 +373,35 @@ function upload_image()
     if(move_uploaded_file($image, $file_path.'/'.$imageName)){
         return "Sukses Upload Gambar";
     }
+}
+
+function upload()
+{
+    // $image = $_FILES[$_POST['imageName']]['tmp_name'];
+    // $imagename = $_FILES[$_POST['imageName']]['name'];
+
+    $image = $_FILES['file']['tmp_name'];
+    $imagename = $_FILES['file']['name'];
+    
+    $file_path = $_SERVER['DOCUMENT_ROOT'] . '/notesapi/images';
+    
+    if (!file_exists($file_path)) {
+        mkdir($file_path, 0777, true);
+    }
+    
+    if(!$image){
+            $data = array(
+                'status' => 0,
+                'message' => "Gambar tidak ditemukan");
+    }
+    else{
+        if(move_uploaded_file($image, $file_path.'/'.$imagename)){
+            $data = array(
+                'status' => 1,
+                'message' => "Sukses Upload Gambar");
+        }
+    }
+
+    header('Content_Type: application/json');
+    echo json_encode($data);
 }
