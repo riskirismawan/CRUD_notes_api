@@ -3,7 +3,7 @@
 -- https://www.phpmyadmin.net/
 --
 -- Host: localhost
--- Generation Time: Sep 28, 2021 at 08:05 AM
+-- Generation Time: Oct 16, 2021 at 04:43 PM
 -- Server version: 10.4.21-MariaDB
 -- PHP Version: 8.0.10
 
@@ -28,7 +28,8 @@ SET time_zone = "+00:00";
 --
 
 CREATE TABLE `note` (
-  `id` int(6) NOT NULL,
+  `note_id` int(6) NOT NULL,
+  `user_id` int(6) NOT NULL,
   `message` varchar(2000) NOT NULL,
   `date` date NOT NULL
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
@@ -37,13 +38,12 @@ CREATE TABLE `note` (
 -- Dumping data for table `note`
 --
 
-INSERT INTO `note` (`id`, `message`, `date`) VALUES
-(1, 'note pertama edit', '2021-09-23'),
-(2, 'note kedua edit', '2021-09-24'),
-(7, 'jangan lupa kerjakan tugas', '2021-09-25'),
-(11, 'semangat guys 💪', '2021-09-25'),
-(16, 'note ketiga', '2021-09-26'),
-(17, 'yok bisa yokkk', '2021-09-25');
+INSERT INTO `note` (`note_id`, `user_id`, `message`, `date`) VALUES
+(2, 29, 'jangan lupa mengerjakan tugas', '2021-10-09'),
+(7, 29, 'jangan lupa kerjakan tugas', '2021-09-25'),
+(11, 29, 'semangat guys 💪', '2021-09-25'),
+(16, 29, 'note ketiga', '2021-10-09'),
+(17, 29, 'yok bisa yokkk', '2021-09-25');
 
 -- --------------------------------------------------------
 
@@ -52,19 +52,21 @@ INSERT INTO `note` (`id`, `message`, `date`) VALUES
 --
 
 CREATE TABLE `users` (
-  `id` int(6) NOT NULL,
+  `user_id` int(6) NOT NULL,
   `username` varchar(25) NOT NULL,
   `password` varchar(25) NOT NULL,
-  `profileImage` varchar(255) DEFAULT NULL
+  `profileImage` varchar(255) DEFAULT NULL,
+  `device_id` varchar(255) DEFAULT NULL
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
 
 --
 -- Dumping data for table `users`
 --
 
-INSERT INTO `users` (`id`, `username`, `password`, `profileImage`) VALUES
-(1, 'riski', '123riski', NULL),
-(2, 'riski', '123riski', '/opt/lampp/htdocs/notesapi/images/Screenshot from 2021-09-02 15-34-28.png');
+INSERT INTO `users` (`user_id`, `username`, `password`, `profileImage`, `device_id`) VALUES
+(27, 'aha', 'aha', 'http://192.168.1.9/notesapi/php/images/IMG-20210508-WA0001.jpg', NULL),
+(28, 'riski', 'riski', NULL, ''),
+(29, 'riski aja', '123riski', NULL, 'adc35d9c5d47d8e9');
 
 --
 -- Indexes for dumped tables
@@ -74,13 +76,15 @@ INSERT INTO `users` (`id`, `username`, `password`, `profileImage`) VALUES
 -- Indexes for table `note`
 --
 ALTER TABLE `note`
-  ADD PRIMARY KEY (`id`);
+  ADD PRIMARY KEY (`note_id`),
+  ADD KEY `user_id` (`note_id`),
+  ADD KEY `user_id_2` (`user_id`);
 
 --
 -- Indexes for table `users`
 --
 ALTER TABLE `users`
-  ADD PRIMARY KEY (`id`);
+  ADD PRIMARY KEY (`user_id`);
 
 --
 -- AUTO_INCREMENT for dumped tables
@@ -90,13 +94,23 @@ ALTER TABLE `users`
 -- AUTO_INCREMENT for table `note`
 --
 ALTER TABLE `note`
-  MODIFY `id` int(6) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=18;
+  MODIFY `note_id` int(6) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=23;
 
 --
 -- AUTO_INCREMENT for table `users`
 --
 ALTER TABLE `users`
-  MODIFY `id` int(6) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=22;
+  MODIFY `user_id` int(6) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=30;
+
+--
+-- Constraints for dumped tables
+--
+
+--
+-- Constraints for table `note`
+--
+ALTER TABLE `note`
+  ADD CONSTRAINT `note_ibfk_1` FOREIGN KEY (`user_id`) REFERENCES `users` (`user_id`);
 COMMIT;
 
 /*!40101 SET CHARACTER_SET_CLIENT=@OLD_CHARACTER_SET_CLIENT */;

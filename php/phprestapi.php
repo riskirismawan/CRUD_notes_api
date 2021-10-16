@@ -8,7 +8,12 @@ if (function_exists($_GET['function'])) {
 function get_notes()
 {
     global $connect;
-    $query = $connect->query("SELECT * FROM note ORDER BY date DESC, id DESC");
+
+    if (!empty($_GET["user_id"])) {
+        $user_id = $_GET["user_id"];
+    }
+
+    $query = $connect->query("SELECT * FROM note WHERE user_id = $user_id ORDER BY date DESC, note_id DESC");
 
     while ($row = mysqli_fetch_object($query)) {
         $data[] = $row;
@@ -28,11 +33,11 @@ function get_note_id()
 {
     global $connect;
 
-    if (!empty($_GET["id"])) {
-        $id = $_GET["id"];
+    if (!empty($_GET["note_id"])) {
+        $note_id = $_GET["note_id"];
     }
 
-    $query = "SELECT * FROM note WHERE id = $id";
+    $query = "SELECT * FROM note WHERE note_id = $note_id";
     $result = $connect->query($query);
 
     while ($row = mysqli_fetch_object($result)) {
@@ -61,6 +66,7 @@ function insert_note()
     global $connect;
 
     $check = array(
+        'user_id' => '',
         'message' => '',
         'date' => ''
     );
@@ -68,6 +74,7 @@ function insert_note()
 
     if ($check_match == count($check)) {
         $result = mysqli_query($connect, "INSERT INTO note SET 
+        user_id = '$_POST[user_id]',
         message = '$_POST[message]',
         date = '$_POST[date]'");
 
@@ -97,8 +104,8 @@ function update_note()
 {
     global $connect;
 
-    if (!empty($_GET["id"])) {
-        $id = $_GET["id"];
+    if (!empty($_GET["note_id"])) {
+        $note_id = $_GET["note_id"];
     }
 
     $check = array(
@@ -110,7 +117,7 @@ function update_note()
     if ($check_match == count($check)) {
         $result = mysqli_query($connect, "UPDATE note SET
         message = '$_POST[message]',
-        date = '$_POST[date]' WHERE id = $id");
+        date = '$_POST[date]' WHERE note_id = $note_id");
 
         if ($result) {
             $response = array(
@@ -127,7 +134,7 @@ function update_note()
         $response = array(
             'status' => 0,
             'message' => 'Update Failed',
-            'data' => $id
+            'data' => $note_id
         );
     }
 
@@ -138,8 +145,8 @@ function update_note()
 function delete_note()
 {
     global $connect;
-    $id = $_GET['id'];
-    $query = "DELETE FROM note WHERE id =".$id;
+    $note_id = $_GET['note_id'];
+    $query = "DELETE FROM note WHERE note_id =".$note_id;
 
     if (mysqli_query($connect, $query)) {
         $response = array(
@@ -186,6 +193,39 @@ function get_user_login()
     }
 
     $query = "SELECT * FROM users WHERE username = '$username' AND password = '$password' ";
+    $result = $connect->query($query);
+
+    while ($row = mysqli_fetch_object($result)) {
+        $data[] = $row;
+    }
+
+    if ($data) {
+        $response = array(
+            'status' => 1,
+            'message' => 'Login Success',
+            'data' => $data
+        );
+    } else {
+        $response = array(
+            'status' => 0,
+            'message' => 'Login Failed'
+        );
+    }
+
+    header('Content_Type: application/json');
+    echo json_encode($response);
+}
+
+function get_user_by_username()
+{
+    global $connect;
+
+    if (!empty($_GET["username"]) && !empty($_GET["device_id"])) {
+        $username = $_GET["username"];
+        $device_id = $_GET["device_id"];
+    }
+
+    $query = "SELECT * FROM users WHERE username = '$username' AND device_id = '$device_id'";
     $result = $connect->query($query);
 
     while ($row = mysqli_fetch_object($result)) {
@@ -297,7 +337,7 @@ function update_user()
             $result = mysqli_query($connect, "UPDATE users SET 
             username = '$_POST[username]',
             password = '$_POST[password]',
-            profileImage = '$_POST[profileImage]' WHERE id = $id");
+            profileImage = '$_POST[profileImage]' WHERE user_id = $id");
 
         if ($result) {
             $response = array(
@@ -337,11 +377,51 @@ function update_user()
     echo json_encode($response);
 }
 
+function update_user_device()
+{
+    global $connect;
+
+    if (!empty($_GET["id"])) {
+        $id = $_GET["id"];
+    }
+
+    $check1 = array(
+        'device_id' => ''
+    );
+
+    $check_match1 = count(array_intersect_key($_POST, $check1));
+
+    if ($check_match1 == count($check1)) {
+            $result = mysqli_query($connect, "UPDATE users SET 
+            device_id = '$_POST[device_id]' WHERE user_id = $id");
+
+        if ($result) {
+            $response = array(
+                'status' => 1,
+                'message' => 'Update Device ID Success'
+            );
+        } else {
+            $response = array(
+                'status' => 0,
+                'message' => 'Update Device ID Failed'
+            );
+        }
+    } else {
+        $response = array(
+            'status' => 0,
+            'message' => 'Wrong Parameter'
+        );
+    }
+
+    header('Content_Type: application/json');
+    echo json_encode($response);
+}
+
 function delete_user()
 {
     global $connect;
     $id = $_GET['id'];
-    $query = "DELETE FROM users WHERE id =".$id;
+    $query = "DELETE FROM users WHERE user_id =".$id;
 
     if (mysqli_query($connect, $query)) {
         $response = array(
